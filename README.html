@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lord Academy - منصة الامتحانات</title>
+    <!-- استدعاء خطوط جوجل للغة العربية لإعطاء مظهر احترافي -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* =========================================
+           إعدادات عامة وألوان التصميم (Dark Royal)
+           ========================================= */
+        :root {
+            --bg-color: #050505; /* أسود غامق جداً */
+            --container-bg: #111111; /* أسود أفتح قليلاً للحاويات */
+            --gold: #d4af37; /* ذهبي ملكي */
+            --gold-hover: #b5952f;
+            --text-light: #ffffff;
+            --text-muted: #aaaaaa;
+            --correct-color: #2ecc71; /* أخضر للإجابة الصحيحة */
+            --wrong-color: #e74c3c; /* أحمر للإجابة الخاطئة */
+            --border-color: #333333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Tajawal', 'Cairo', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-light);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* =========================================
+           الهيدر والشعار
+           ========================================= */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            width: 100%;
+        }
+
+        .logo {
+            font-family: 'Cairo', sans-serif;
+            color: var(--gold);
+            font-size: 3.5rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+
+        .subtitle span {
+            color: var(--gold);
+        }
+
+        /* =========================================
+           الحاويات الأساسية للشاشات المختلفة
+           ========================================= */
+        .screen-container {
+            background-color: var(--container-bg);
+            width: 100%;
+            max-width: 800px;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            border-top: 4px solid var(--gold);
+            display: none; /* يتم إظهارها عن طريق جافاسكريبت */
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .screen-container.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* =========================================
+           شاشة البداية
+           ========================================= */
+        .start-screen {
+            text-align: center;
+        }
+
+        .start-screen h2 {
+            color: var(--gold);
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .start-screen p {
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        .settings-group {
+            background-color: #1a1a1a;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            display: inline-block;
+            border: 1px solid var(--border-color);
+        }
+
+        .settings-group label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        .settings-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--gold);
+        }
+
+        .btn {
+            background-color: var(--gold);
+            color: var(--bg-color);
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: var(--gold-hover);
+            transform: scale(1.05);
+        }
+
+        /* =========================================
+           شاشة الامتحان
+           ========================================= */
+        .exam-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .question-counter {
+            color: var(--gold);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .timer {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--text-light);
+            background: #222;
+            padding: 5px 15px;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+        }
+
+        .timer.danger {
+            color: var(--wrong-color);
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0.5; }
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background-color: #222;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--gold);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-text {
+            font-size: 1.4rem;
+            margin-bottom: 25px;
+            line-height: 1.8;
+            color: var(--text-light);
+        }
+
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .option-btn {
+            background-color: #1a1a1a;
+            color: var(--text-light);
+            border: 2px solid var(--border-color);
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: right;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--gold);
+            background-color: #222;
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+        }
+
+        /* أصناف الإجابات */
+        .option-btn.correct {
+            background-color: rgba(46, 204, 113, 0.1);
+            border-color: var(--correct-color);
+            color: var(--correct-color);
+            font-weight: bold;
+        }
+
+        .option-btn.wrong {
+            background-color: rgba(231, 76, 60, 0.1);
+            border-color: var(--wrong-color);
+            color: var(--wrong-color);
+        }
+
+        .explanation-box {
+            background-color: rgba(212, 175, 55, 0.05);
+            border-right: 4px solid var(--gold);
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .explanation-box h4 {
+            color: var(--gold);
+            margin-bottom: 10px;
+        }
+
+        .next-btn-container {
+            text-align: left; /* لزر التالي في اليسار */
+        }
+
+        #next-btn {
+            display: none; /* يظهر بعد الإجابة */
+        }
+
+        /* =========================================
+           شاشة النتيجة والمراجعة
+           ========================================= */
+        .result-screen {
+            text-align: center;
+        }
+
+        .result-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 8px solid var(--gold);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 30px;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+        }
+
+        .result-circle .score {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--gold);
+        }
+
+        .result-circle .percentage {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+        }
+
+        .result-message {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+        }
+
+        .review-list {
+            text-align: right;
+            margin-top: 30px;
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        /* تخصيص شريط التمرير (Scrollbar) */
+        .review-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        .review-list::-webkit-scrollbar-track {
+            background: #111; 
+        }
+        .review-list::-webkit-scrollbar-thumb {
+            background: var(--gold); 
+            border-radius: 4px;
+        }
+
+        .review-item {
+            background-color: #1a1a1a;
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .review-item.correct-ans {
+            border-right: 4px solid var(--correct-color);
+        }
+
+        .review-item.wrong-ans {
+            border-right: 4px solid var(--wrong-color);
+        }
+
+        .review-question {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--gold);
+        }
+
+        .review-details p {
+            margin-bottom: 5px;
+            font-size: 0.95rem;
+        }
+
+        /* =========================================
+           التجاوب مع الشاشات (Responsive)
+           ========================================= */
+        @media (max-width: 600px) {
+            .logo { font-size: 2.5rem; }
+            .screen-container { padding: 20px; }
+            .question-text { font-size: 1.2rem; }
+            .option-btn { font-size: 1rem; padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- الهيدر الرئيسي -->
+    <header>
+        <h1 class="logo">Lord Academy</h1>
+        <h2 class="subtitle">إعداد <span>علي جلال</span></h2>
+    </header>
+
+    <!-- شاشة الامتحان -->
+    <div id="exam-screen" class="screen-container active">
+        <div class="exam-header">
+            <div class="question-counter">سؤال <span id="current-q-num">1</span> / 60</div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <div class="question-text" id="question-text">
+            <!-- سيتم حقن نص السؤال هنا -->
+        </div>
+
+        <div class="options-grid" id="options-container">
+            <!-- سيتم حقن الخيارات هنا -->
+        </div>
+
+        <div class="explanation-box" id="explanation-box">
+            <h4>شرح الإجابة:</h4>
+            <p id="explanation-text"></p>
+        </div>
+
+        <div class="next-btn-container">
+            <button class="btn" id="next-btn" onclick="nextQuestion()">السؤال التالي</button>
+        </div>
+    </div>
+
+    <!-- شاشة النتيجة -->
+    <div id="result-screen" class="screen-container">
+        <h2>انتهى الامتحان!</h2>
+        
+        <div class="result-circle">
+            <div class="score"><span id="final-score">0</span>/60</div>
+            <div class="percentage" id="final-percentage">0%</div>
+        </div>
+
+        <div class="result-message" id="result-message">
+            <!-- رسالة التقييم -->
+        </div>
+
+        <button class="btn" onclick="showReview()">مراجعة الإجابات والشرح</button>
+        <button class="btn" style="background-color: #333; margin-right: 10px;" onclick="location.reload()">امتحان جديد</button>
+
+        <div class="review-list" id="review-list" style="display: none;">
+            <!-- سيتم حقن المراجعة هنا -->
+        </div>
+    </div>
+
+    <!-- =========================================
+         سكريبت جافاسكريبت للتحكم بالمنطق
+         ========================================= -->
+    <script>
+        // منع المستخدم من إعادة تحميل الصفحة عن طريق الخطأ أثناء الامتحان
+        window.addEventListener('beforeunload', function (e) {
+            if(document.getElementById('exam-screen').classList.contains('active')){
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        // ---------------------------------------------------------
+        // قاعدة بيانات الأسئلة (60 سؤال: 30 اختيارات + 30 صح/خطأ)
+        // مستوحاة حرفياً من محتوى ملف PDF المرفق
+        // ---------------------------------------------------------
+        const questionsDB = [
+            // === أولاً: 30 سؤال اختيار من متعدد ===
+            {
+                type: "mcq",
+                question: "وفقاً للنص، ما هو الدور الإيجابي الذي تلعبه اللغة في علاقتها بالفكر؟",
+                options: ["تجميد الفكر في قوالب ثابتة", "توجيه الفكر وإعادة تشكيل علاقاته", "تدمير البناء المنطقي للفكر", "لا يوجد علاقة بين اللغة والفكر"],
+                correctIndex: 1,
+                explanation: "كما ورد في الملف، للغة دور إيجابي في توجيه الفكر، وللفكر فعالية في توجيه اللغة وإعادة تشكيل علاقاتها."
+            },
+            {
+                type: "mcq",
+                question: "تُعد اللغة أهم مكونات العمل الشعري لأنها:",
+                options: ["مجرد أصوات موسيقية لا معنى لها", "الأداة والمادة التي يعبر بها الشاعر عن أفكاره ويشكل أزمنته وموسيقاه", "وسيلة للتواصل الاجتماعي البسيط فقط", "قالب جامد يحجم خيال الشاعر"],
+                correctIndex: 1,
+                explanation: "اللغة في الشعر هي أهم مكونات العمل الشعري، فهي الأداة والمادة التي يعبر بها الشاعر عن أفكاره، ويشكل منها أزمنته وأمكنته وموسيقاه."
+            },
+            {
+                type: "mcq",
+                question: "من سمات لغة الشعر الأندلسي (كما في شعر ابن اللبانة):",
+                options: ["الغموض والتعقيد اللفظي", "استخدام الألفاظ الغريبة والمعقدة", "سهولة الألفاظ وسلاسة التراكيب", "الاعتماد الكلي على المحسنات البديعية المتكلفة"],
+                correctIndex: 2,
+                explanation: "اتسمت لغة الشعر الأندلسي بسهولة الألفاظ والبعد عن الغريب المعقد وسلاسة التراكيب، بسبب سهولة طباعهم ورقة طبيعتهم وعدم التكلف."
+            },
+            {
+                type: "mcq",
+                question: "أي المستويات اللغوية الآتية يختص بدراسة مخارج الحروف وصفاتها والنبر؟",
+                options: ["المستوى النحوي", "المستوى المعجمي", "المستوى الصوتي", "المستوى الصرفي"],
+                correctIndex: 2,
+                explanation: "المستوى الصوتي هو الذي يدرس مخارج الحروف وصفاتها والنبر."
+            },
+            {
+                type: "mcq",
+                question: "دراسة حروف الزيادة (سألتمونيها) والحروف المحذوفة وأثر الوزن على الدلالة يندرج تحت:",
+                options: ["المستوى البياني", "المستوى الصرفي", "المستوى النظمي", "المستوى النحوي"],
+                correctIndex: 1,
+                explanation: "المستوى الصرفي يدرس مستوى الكلمة، وزنها، حروف الزيادة (سألتمونيها)، والحروف المحذوفة."
+            },
+            {
+                type: "mcq",
+                question: "المستوى البياني في دراسة اللغة يهتم بدراسة:",
+                options: ["علامات الترقيم وقواعد الإملاء", "التطور الطارئ على دلالات الكلمات", "الجملة الاسمية والفعلية والتقديم والتأخير", "الخيال والصورة (التشبيه، الاستعارة، الكناية، المجاز)"],
+                correctIndex: 3,
+                explanation: "المستوى البياني يدرس الخيال والصورة مثل التشبيه والاستعارة والكناية والمجاز المرسل والعقلي."
+            },
+            {
+                type: "mcq",
+                question: "المستوى الذي يُعد خاصاً بالشعر ويدرس موسيقى الشعر الداخلية والخارجية هو:",
+                options: ["المستوى الكتابي", "المستوى النظمي", "المستوى الدلالي", "المستوى الصوتي"],
+                correctIndex: 1,
+                explanation: "المستوى النظمي هو مستوى خاص بالشعر، يدرس موسيقى الشعر الداخلية والخارجية."
+            },
+            {
+                type: "mcq",
+                question: "النص الأدبي بمفهومه الخاص يستبعد نصوصاً معينة، أي من التالي يُستبعد من النص الأدبي؟",
+                options: ["الشعر الوجداني", "القصص القصيرة", "نصوص التاريخ والجغرافيا والنحو", "المسرحيات النثرية"],
+                correctIndex: 2,
+                explanation: "النص الأدبي مقصور على الأدب بمفهومه الخاص، ويستبعد نصوص التاريخ، الجغرافيا، العلوم، والنحو."
+            },
+            {
+                type: "mcq",
+                question: "ما هي دلالة كلمة (أدب) في العصر الجاهلي استناداً لقول طرفة بن العبد (نحن في المشتاة ندعو الجفلا... لا ترى الأدب منا ينتقر)؟",
+                options: ["الثقافة الواسعة", "الدعوة إلى الطعام (دلالة أخلاقية مرتبطة بالكرم)", "الكلام الجيد المنظوم والمنثور", "الجانب التعليمي والتهذيبي لأبناء الملوك"],
+                correctIndex: 1,
+                explanation: "في العصر الجاهلي، كان معناها حسياً يعني (الدعوة إلى الطعام) وهي دلالة أخلاقية تهذيبية مرتبطة بالكرم والضيافة."
+            },
+            {
+                type: "mcq",
+                question: "في أي عصر ظهرت طبقة (المؤدبين) لتعليم أبناء الخلفاء، واقترنت كلمة أدب بالجانب التعليمي التهذيبي؟",
+                options: ["عصر صدر الإسلام", "العصر العباسي", "العصر الأموي", "العصر الجاهلي"],
+                correctIndex: 2,
+                explanation: "في العصر الأموي، اقترن الجانب التعليمي بالتهذيبي وظهرت طبقة المؤدبين لتعليم أبناء الخلفاء."
+            },
+            {
+                type: "mcq",
+                question: "من هو أول من استخدم كلمة (أدب) كـ 'حرفة' في قوله (حرفة الأدب آفة الأدباء)؟",
+                options: ["المتنبي", "الخليل بن أحمد الفراهيدي", "ابن رشيق", "ابن خلدون"],
+                correctIndex: 1,
+                explanation: "الخليل بن أحمد الفراهيدي في العصر العباسي هو أول من استخدم كلمة أدب كـ 'حرفة'."
+            },
+            {
+                type: "mcq",
+                question: "أي التعريفات الآتية للأدب أُخذ عليه أنه (واسع فضفاض قد يشمل الفلسفة)؟",
+                options: ["صياغة فنية لتجربة بشرية", "تعبير عن الحياة مادته اللغة", "كافة الآثار اللغوية التي تثير انفعالات عاطفية أو أحاسيس جمالية", "مجموع الكلام الجيد نثراً وشعراً"],
+                correctIndex: 2,
+                explanation: "التعريف الأول (كافة الآثار اللغوية التي تثير انفعالات عاطفية) مأخذه أنه واسع فضفاض قد يشمل الفلسفة."
+            },
+            {
+                type: "mcq",
+                question: "كيف عرّف كارل بروكلمان الأدب؟",
+                options: ["كل ما صاغه الإنسان في قالب لغوي ليوصله إلى الذاكرة", "تعبير عن الحياة مادته اللغة", "صياغة فنية لتجربة بشرية", "تجسيد الخيال في صورة واقعية"],
+                correctIndex: 0,
+                explanation: "تعريف كارل بروكلمان للأدب: كل ما صاغه الإنسان في قالب لغوي ليوصله إلى الذاكرة."
+            },
+            {
+                type: "mcq",
+                question: "التقسيم الزمني للأدب مستمد من الدراسات الغربية ويرتبط بـ:",
+                options: ["تطور اللغة العربية", "العصور السياسية", "الأجناس الأدبية", "المدارس النقدية"],
+                correctIndex: 1,
+                explanation: "التقسيم الزمني (التاريخي) مستمد من الدراسات الغربية، ويرتبط بالعصور السياسية (جاهلي، إسلامي، أموي... الخ)."
+            },
+            {
+                type: "mcq",
+                question: "يبدأ العصر الإسلامي في التقسيم التاريخي للأدب من البعثة النبوية وينتهي بـ:",
+                options: ["سقوط الدولة الأموية (132هـ)", "مقتل علي بن أبي طالب (40هـ)", "سقوط بغداد (656هـ)", "الحملة الفرنسية"],
+                correctIndex: 1,
+                explanation: "العصر الإسلامي يمتد من البعثة إلى مقتل علي بن أبي طالب (40هـ)."
+            },
+            {
+                type: "mcq",
+                question: "يُعرّف الشعر اصطلاحاً بأنه القول المؤلف من أمور تخيلية يقصد بها:",
+                options: ["الترغيب أو الترهيب", "نقل الحقائق العلمية", "سرد القصص التاريخية", "توضيح القواعد النحوية"],
+                correctIndex: 0,
+                explanation: "اصطلاحاً الشعر هو: القول المؤلف من أمور تخيلية، يقصد بها الترغيب (الخمر ياقوتة سيالة) أو الترهيب (العسل قيء النحل)."
+            },
+            {
+                type: "mcq",
+                question: "الكلام المسجوع البليغ الذي فيه تخييل وتأثير ولكنه غير موزون يُسمى:",
+                options: ["الشعر الحر", "الشعر المنثور", "الخطابة", "القصة القصيرة"],
+                correctIndex: 1,
+                explanation: "الشعر المنثور هو كلام مسجوع بليغ فيه تخييل وتأثير، ولكنه غير موزون."
+            },
+            {
+                type: "mcq",
+                question: "أي من الآتي ليس من أركان الشعر الأربعة التي تعد قيوداً لإطلاق التسمية؟",
+                options: ["المعنى", "الوزن", "القصد", "الغموض"],
+                correctIndex: 3,
+                explanation: "أركان الشعر الأربعة هي: المعنى، الوزن، القافية، القصد. (الكلام الموزون عفواً دون قصد لا يسمى شعراً)."
+            },
+            {
+                type: "mcq",
+                question: "حسب النص، ما هي مقدرة الشاعر على الجمع بين اللفظ والمعنى، واستخلاص الألفاظ وترتيبها بلاغياً؟",
+                options: ["الخيال", "التشبيه", "النظم", "الأسلوب"],
+                correctIndex: 2,
+                explanation: "النظم هو مقدرة الشاعر على الجمع بين اللفظ والمعنى، واستخلاص الألفاظ وترتيبها بلاغياً."
+            },
+            {
+                type: "mcq",
+                question: "أي مما يلي يُعد من قوى الشاعر عند (القرطاجني)؟",
+                options: ["القدرة على حفظ النثر", "تصور كليات الشعر والمقاصد", "معرفة علوم النحو والصرف فقط", "تجاهل التناسب بين المعاني"],
+                correctIndex: 1,
+                explanation: "من قوى الشاعر عند القرطاجني: تصور كليات الشعر والمقاصد، القوة على التشبيه، وغيرها."
+            },
+            {
+                type: "mcq",
+                question: "لماذا النثر الجاهلي الواصل إلينا قليل مقارنة بالشعر؟",
+                options: ["لأن العرب لم يكونوا يتحدثون النثر", "بسبب صعوبة حفظ النثر لغياب الإيقاع وانعدام التدوين", "لأن النثر كان محظوراً في الجاهلية", "بسبب احتراق جميع مكتبات الجاهلية"],
+                correctIndex: 1,
+                explanation: "أسباب قلة النثر الجاهلي: صعوبة حفظ النثر لغياب الإيقاع، الاهتمام بنبوغ الشاعر، وانعدام التدوين."
+            },
+            {
+                type: "mcq",
+                question: "أي من فنون النثر الآتية يُعد من فنون النثر الحديث وليس الجاهلي؟",
+                options: ["الخطابة", "المسرحية", "الأمثال", "الوصايا"],
+                correctIndex: 1,
+                explanation: "فنون النثر الحديث تشمل: المقالة، المسرحية، الرواية، القصة. بينما الخطابة والأمثال والوصايا من فنون النثر الجاهلي."
+            },
+            {
+                type: "mcq",
+                question: "كيف كانت حالة النثر في العصر العثماني قبل عصر النهضة؟",
+                options: ["مزدهراً وقوياً وخالياً من العيوب", "ركيكاً مثقلاً بالزخارف ومختلطاً بالعامية والتركية", "مقتصراً على الترجمات العلمية فقط", "شبيهاً بأسلوب القرآن الكريم في الفصاحة"],
+                correctIndex: 1,
+                explanation: "كان النثر في العصر العثماني ركيكاً مثقلاً بالزخارف ومختلطاً بالعامية والتركية."
+            },
+            {
+                type: "mcq",
+                question: "في المقارنة بين الشعر والنثر، أي العنصرين يغلب في الشعر؟",
+                options: ["العقل", "العاطفة (لغة القلب والأحاسيس)", "التقرير المباشر", "الإطناب والشرح"],
+                correctIndex: 1,
+                explanation: "العنصر الغالب في الشعر هو العاطفة (لغة القلب والأحاسيس)، بينما في النثر يغلب العقل."
+            },
+            {
+                type: "mcq",
+                question: "في أي من الفنين (الشعر أم النثر) يسبق المعنى اللفظ (الكاتب لديه فكرة يبحث لها عن ألفاظ فيطنب ويشرح)؟",
+                options: ["في النثر", "في الشعر", "في كليهما بنفس الدرجة", "لا ينطبق على أي منهما"],
+                correctIndex: 0,
+                explanation: "في النثر، المعنى يسبق اللفظ (الكاتب لديه فكرة يبحث لها عن ألفاظ فيطنب). أما في الشعر فاللفظ (الوزن) يسبق المعنى."
+            },
+            {
+                type: "mcq",
+                question: "من قواعد الشعر عند (ابن رشيق) ارتباط الغضب بـ:",
+                options: ["المدح والشكر", "الاستعطاف والاعتذار", "الهجاء والعتاب", "الشوق والنسيب"],
+                correctIndex: 2,
+                explanation: "قواعد الشعر عند ابن رشيق: الغضب يرتبط بـ (هجاء / عتاب)."
+            },
+            {
+                type: "mcq",
+                question: "ما هو العنصر الأدبي الذي يميز الأدب عن الموسيقى البحتة، ويهدف لجعل المتلقي يشعر بالحقائق؟",
+                options: ["الأسلوب", "الفكرة", "الخيال", "العاطفة"],
+                correctIndex: 1,
+                explanation: "الفكرة هي المعنى الذي يقوم عليه العمل وتهدف لجعل المتلقي يشعر بالحقائق، وهي تميز الأدب عن الموسيقى البحتة."
+            },
+            {
+                type: "mcq",
+                question: "ما هي العلاقة بين العاطفة والخيال في العمل الأدبي؟",
+                options: ["علاقة عكسية (كلما زادت العاطفة قل الخيال)", "علاقة طردية (كلما زادت العاطفة زاد الخيال)", "لا توجد علاقة بينهما", "الخيال يلغي العاطفة تماماً"],
+                correctIndex: 1,
+                explanation: "علاقة الخيال بالعاطفة طردية (كلما زادت العاطفة زاد الخيال)."
+            },
+            {
+                type: "mcq",
+                question: "تجسيد الجمادات ومنحها حياة، مثل قول الشاعر (وما الموت إلا سارق...)، يُعد من أهم صور:",
+                options: ["الأسلوب", "الفكرة", "الخيال (التشخيص)", "العاطفة"],
+                correctIndex: 2,
+                explanation: "التشخيص (منح الجمادات حياة) هو من أهم صور الخيال."
+            },
+            {
+                type: "mcq",
+                question: "الفرق بين بنية النص والأسلوب هو أن:",
+                options: ["الأسلوب أشمل من بنية النص", "بنية النص أوسع وأشمل من الأسلوب (فالأسلوب جزء منها)", "بنية النص والأسلوب مصطلحان لنفس المعنى تماماً", "الأسلوب يدرس الأفكار بينما بنية النص تدرس الأصوات فقط"],
+                correctIndex: 1,
+                explanation: "بنية النص أوسع وأشمل من الأسلوب، فالأسلوب جزء من بنية النص وهو النسيج اللغوي فقط."
+            },
+
+            // === ثانياً: 30 سؤال صح وخطأ ===
+            {
+                type: "tf",
+                question: "حسب النص، للغة دور إيجابي في توجيه الفكر، وليس للفكر أي تأثير على اللغة.",
+                options: ["صح", "خطأ"],
+                correctIndex: 1,
+                explanation: "خطأ. للنص: للغة دور إيجابي في توجيه الفكر، وللفكر فعالية في توجيه اللغة وإعادة تشكيل علاقاتها."
+            },
+            {
+                type: "tf",
+                question: "المستوى المعجمي أو الدلالي يدرس المعاجم والتطور الطارئ على دلالات الكلمات وأسبابه.",
+                options: ["صح", "خطأ"],
+                correctIndex: 0,
+                explanation: "صح. المستوى المعجمي الدلالي يدرس المعاجم وتطور دلالات الكلمات."
+            },
+            {
+                type: "tf",
+                question: "التعريف الحديث للأدب يقتصر على الإبداع ويعتبره سجل لتراث الأمة بأسلوب جميل.",
+                options: ["صح", "خطأ"],
+                correctIndex: 0,
+                explanation: "صح. التعريف في العصر الحديث اقتصر على الإبداع، وأنه سجل لتراث الأمة بأسلوب جميل."
+            },
+            {
+                type: "tf",
+                question: "في عصر صدر الإسلام، اكتسبت كلمة 'أدب' دلالة تعليمية وتربوية أخلاقية، كما في حديث (أدبني ربي فأحسن تأديبي).",
+                options: ["صح", "خطأ"],
+                correctIndex: 0,
+                explanation: "صح. في عصر صدر الإسلام كانت الدلالة تعليمية تربوية أخلاقية."
+            },
+            {
+                type: "tf",
+                question: "الأدب العام هو الأدب المتسم بالجمال الفني والعناصر البلاغية فقط ولا يشمل كتابات العلماء.",
+                options: ["صح", "خطأ"],
+                correctIndex: 1,
+                explanation: "خطأ. الأدب العام يشمل كتابات العلماء والأدباء دون تفرقة، بينما الأدب 'الخاص' هو المتسم بالجمال الفني."
+            },
+            {
+                type: "tf",
+                question: "العصر العثماني والمملوكي في التقسيم التاريخي للأدب يبدأ من سقوط بغداد وينتهي بالحملة الفرنسية.",
+                options: ["صح", "خطأ"],
+                correctIndex: 0,
+                explanation: "صح. العصر العثماني والمملوكي يبدأ من سقوط بغداد ويمتد إلى الحملة الفرنسية (1213هـ)."
+            },
+            {
+                type: "tf",
+                question: "الكلام الموزون عفواً (الذي يصدر بوزن دون قصد من قائله) يُسمى شعراً اصطلاحاً.",
+                options: ["صح", "خطأ"],
+                correctIndex: 1,
+                explanation: "خطأ. القصد ركن من أركان الشعر، والكلام الموزون عفواً دون قصد لا يسمى شعراً."
+            },
+            {
+                type: "tf",
+                question: "من فوائد الشعر أنه ديوان العرب وسجل أحسابهم ومستودع حكمتهم.",
+                options: ["صح", "خطأ"],
+                correctIndex: 0,
+                explanation: "صح. الشعر ديوان العرب وسجل أحسابهم وهو من أهم فوائده وفضائله."
+            },
+            {
+                type: "tf",
+                question: "الشعر أكثر من النثر من حيث الكمية المنتجة، ولكن المحفوظ من النثر أكثر.",
+                options: ["صح", "خطأ"],
+                correctIndex: 1,
+                explanation: "خطأ. الشعر أقل من النثر كَمّاً، لكن المحفوظ من جيده أكثر بكثير من النثر (كما أشار ابن رشيق)."
+            },
+            {
+                type: "tf",
+                question: "من قوى الشاعر عند القرطاجني: التخيل في تسيير العبارات متزنة.",
+                options: ["صح", "خطأ"],
+                correctIndex: 0,
+                explanation: "صح. التخيل في تسيير العبارات متزنة هو أحد قوى الشاعر عند القرطاجني."
+            },
+            {
+                type: "tf",
+                question: "الصحافة مثل 'الوقائع المصرية' لم يكن لها أي دور في تحرير النثر الحديث من القيود والركاكة.",
+                options: ["صح", "خطأ"],
+                correctIndex: 1,
+                explanation: "خطأ. الصحافة ساعدت بشكل كبير في تحرير النثر من القيود والركاكة ونتج عنها فن المقال."
+            },
+            {
+                type: "tf",
+                question: "النثر أسبق في الوجود من الشعر لأنه لغة العاطفة الطبيعية.",
+                options: ["صح", "خطأ"],
+                correctIndex: 1,
+                explanation: "خطأ. في المقارنة، الشعر هو الأسبق في الوجود (لغة العاطفة الطبيعية)، بينما النثر ظهر مع نضج العقل وتقدم الحضارة."
+            },
+            {
+                type: "tf",
+                question: "الغاية والموضوع في النثر هي التقرير والتوضيح، بينما في الشعر التأثير والتصوير.",
+                options: ["صح", "خطأ"],
+                correctIndex: 0,
+                explanation: "صح. النثر يهدف للتقرير والتوضيح، والشعر يهدف للتأثير والتصوير."
+            },
+            {
+                type: "tf",
+                question: "أسلوب النثر يتميز بالوضوح والمباشرة والشرح وحشد المترادفات.",
+                options: ["صح", "خطأ"],
+                correctIndex: 0,
+                explanation: "صح. أسلوب النثر يتميز بالوضوح والمباشرة والشرح ويتحمل المترادفات."
+            },
+            {
+                type: "tf",
+                question: "في الشعر، تبديل المرادف لا يغير المعنى الدقيق ولا يؤثر على الإيحاء أو الإيقاع.",
+                options: ["صح", "خطأ"],
+                correctIndex: 1,
+                explanation: "خطأ. في الشعر، الكلمة ترتبط بما قبلها وما بعدها، وتبديل المرادف يغير المعنى الدقيق (مثل قائماً بالباب / واقفاً بالباب)."
+            },
+            {
+                type: "tf",
+                question: "في النثر، البيت أو الشطر يحمل معنى مستقلاً، بينما في الشعر النص متكامل لا يتجزأ لحمل المعنى الكلي.",
+                options: ["صح", "خطأ"],
+                correctIndex: 1,
+                explanation: "خطأ. العكس صحيح: في النثر النص متكامل لحمل المعنى (بناء عضوي)، بينما في الشعر (العمودي) البيت يحمل معنى مستقلاً."
+            },
+            {
+                type: "tf",
+                question: "العمل الأدبي يتكون من أربعة عناصر رئيسة هي: العاطفة، الفكرة، الخيال، الأسلوب.",
+                options: ["صح", "خطأ"],
+                correctIndex: 0,
+                explanation: "صح. هذه هي عناصر الأدب الأربعة المذكورة في النص."
+            },
+            {
+                type: "tf",
+                question: "حسب قواعد الشعر عند ابن رشيق، الرهبة ترتبط بـ (الاستعطاف / الاعتذار).",
+                options: ["صح", "خطأ"],
+                correctIndex: 0,
+                explanation: "صح. ابن رشيق ربط الرهبة بالاستعطاف والاعتذار."
+            },
+            {
+                type: "tf",
+                question: "شرط العاطفة في الأدب أن تظل محصورة في الأفق الفردي الشديد الخصوصية لكي تحقق الخلود.",
+                options: ["صح", "خطأ"],
+                correctIndex: 1,
+                explanation: "خطأ. شرط العاطفة أن تنتقل من الأفق الفردي إلى الأفق الإنساني العام لتحقيق الخلود."
+            },
+            {
+                type: "tf",
+                question: "المقالة والقصة من الأجناس الأدبية التي تغلب فيها (الأفكار) على الخيال والعاطفة.",
+                options: ["صح", "خطأ"],
+                correctIndex: 0,
+                explanation: "صح. في المقالة والقصة تغلب الأفكار، بينما في الشعر يغلب الخيال والعاطفة."
+            },
+            {
+                type: "tf",
+                question: "ابن خلدون عرّف الأسلوب بأنه: 'المنوال الذي ينسج فيه التركيب'.",
+                options: ["صح", "خطأ"],
+                correctIndex: 0,
+                explanation: "صح. مقولة ابن خلدون في تعريف الأسلوب هي المنوال الذي ينسج فيه التركيب."
+            },
+            {
+                type: "tf",
+                question: "علوم النحو والصرف والعروض هي التي تصنع الأسلوب البليغ ولا يحتاج الأديب للطبع والتمرس.",
+                options: ["صح", "خطأ"],
+                correctIndex: 1,
+                explanation: "خطأ. هذه العلوم هي مجرد 'علوم آلة' تضبط الصواب لكنها لا تصنع أسلوباً بليغاً، بل يُصنع بالطبع والتمرس."
+            },
+            {
+                type: "tf",
+                question: "المستوى النحوي يدرس الخيال والصورة كالتشبيه والاستعارة.",
+                options: ["صح", "خطأ"],
+                correctIndex: 1,
+                explanation: "خطأ. المستوى النحوي يدرس الجملة والتراكيب، بينما المستوى (البياني) هو الذي يدرس الخيال والصورة."
+            },
+            {
+                type: "tf",
+                question: "من مصادر التجربة الإبداعية: الذاتية، التاريخية، الإنسانية، والأسطورية.",
+                options: ["صح", "خطأ"],
+                correctIndex: 0,
+                explanation: "صح. هذه كلها من مصادر التجربة الإبداعية المذكورة في النص."
+            },
+            {
+                type: "tf",
+                question: "في العصر العباسي، أصبحت كلمة 'أدب' تقابل كلمة 'علم' (الذي اختص بالشريعة والفقه).",
+                options: ["صح", "خطأ"],
+                correctIndex: 1,
+                explanation: "خطأ. هذا حدث في (العصر الأموي) حيث أصبحت كلمة أدب تقابل كلمة علم."
+            },
+            {
+                type: "tf",
+                question: "المستوى الصرفي يدرس تمييز الكلمات السهلة من الصعبة.",
+                options: ["صح", "خطأ"],
+                correctIndex: 0,
+                explanation: "صح. من مهام المستوى الصرفي دراسة الكلمة ووزنها وتمييز الكلمات السهلة من الصعبة."
+            },
+            {
+                type: "tf",
+                question: "التقسيم الفني للأدب يقسمه إلى قسمين رئيسين: الشعر والنثر.",
+                options: ["صح", "خطأ"],
+                correctIndex: 0,
+                explanation: "صح. التقسيم الفني ينقسم إلى الشعر والنثر."
+            },
+            {
+                type: "tf",
+                question: "أبيات عمرو بن الإطنابة التي منعت معاوية من الهرب يوم صفين هي مثال على أن الشعر يقرر الحقائق العلمية.",
+                options: ["صح", "خطأ"],
+                correctIndex: 1,
+                explanation: "خطأ. هي مثال على أن الشعر يشحذ الهمم ويقوي العزائم، وليس لتقرير الحقائق العلمية."
+            },
+            {
+                type: "tf",
+                question: "الألفاظ في الأدب تعتبر مجرد 'مواد بناء'، والبراعة تكمن في النسج والتركيب.",
+                options: ["صح", "خطأ"],
+                correctIndex: 0,
+                explanation: "صح. الألفاظ مجرد مواد بناء، والبراعة في النسج والتركيب (الأسلوب)."
+            },
+            {
+                type: "tf",
+                question: "بنية النص هي البناء الفني الشامل الذي يتضمن العبارات، التراكيب، الصور، الموسيقى، الأفكار والعواطف.",
+                options: ["صح", "خطأ"],
+                correctIndex: 0,
+                explanation: "صح. بنية النص هي البناء الفني الشامل لكل هذه العناصر والعلاقات بينها."
+            }
+        ];
+
+        // ---------------------------------------------------------
+        // متغيرات الحالة (State Variables)
+        // ---------------------------------------------------------
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let userAnswers = []; // لحفظ اختيارات المستخدم للمراجعة
+
+        // ---------------------------------------------------------
+        // دوال التحكم بالواجهة والمنطق
+        // ---------------------------------------------------------
+
+        // بدء الامتحان تلقائياً عند تحميل الصفحة
+        window.onload = function() {
+            loadQuestion(currentQuestionIndex);
+        };
+
+        // تحميل السؤال
+        function loadQuestion(index) {
+            const q = questionsDB[index];
+            const qText = document.getElementById('question-text');
+            const optionsContainer = document.getElementById('options-container');
+            const qNum = document.getElementById('current-q-num');
+            const explanationBox = document.getElementById('explanation-box');
+            const nextBtn = document.getElementById('next-btn');
+
+            // تحديث الواجهة
+            qNum.innerText = index + 1;
+            qText.innerText = (index < 30 ? "اختر الإجابة الصحيحة: " : "حدد صح أم خطأ: ") + "\n" + q.question;
+            optionsContainer.innerHTML = '';
+            explanationBox.style.display = 'none';
+            nextBtn.style.display = 'none';
+
+            // تحديث شريط التقدم
+            const progressPercent = ((index) / questionsDB.length) * 100;
+            document.getElementById('progress-bar').style.width = progressPercent + '%';
+
+            // إنشاء أزرار الخيارات
+            q.options.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(i, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        // فحص الإجابة
+        function checkAnswer(selectedIndex, btnElement) {
+            const q = questionsDB[currentQuestionIndex];
+            const optionsContainer = document.getElementById('options-container');
+            const buttons = optionsContainer.getElementsByClassName('option-btn');
+            const explanationBox = document.getElementById('explanation-box');
+            const explanationText = document.getElementById('explanation-text');
+            const nextBtn = document.getElementById('next-btn');
+
+            // إيقاف تفاعل كل الأزرار بعد الاختيار
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].disabled = true;
+            }
+
+            // حفظ اختيار المستخدم
+            userAnswers[currentQuestionIndex] = selectedIndex;
+
+            // التحقق من الإجابة
+            if (selectedIndex === q.correctIndex) {
+                btnElement.classList.add('correct');
+                score++;
+            } else {
+                btnElement.classList.add('wrong');
+                // تظليل الإجابة الصحيحة
+                buttons[q.correctIndex].classList.add('correct');
+            }
+
+            // عرض الشرح
+            explanationText.innerText = q.explanation;
+            explanationBox.style.display = 'block';
+
+            // إظهار زر التالي
+            nextBtn.style.display = 'inline-block';
+            if (currentQuestionIndex === questionsDB.length - 1) {
+                nextBtn.innerText = "إنهاء الامتحان وعرض النتيجة";
+            }
+        }
+
+        // الانتقال للسؤال التالي
+        function nextQuestion() {
+            currentQuestionIndex++;
+            
+            if (currentQuestionIndex < questionsDB.length) {
+                loadQuestion(currentQuestionIndex);
+            } else {
+                endExam();
+            }
+        }
+
+        // إنهاء الامتحان
+        function endExam() {
+            document.getElementById('exam-screen').classList.remove('active');
+            document.getElementById('result-screen').classList.add('active');
+
+            const percent = Math.round((score / questionsDB.length) * 100);
+            
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('final-percentage').innerText = percent + "%";
+            
+            const msgEl = document.getElementById('result-message');
+            if(percent >= 90) {
+                msgEl.innerHTML = "<span style='color:var(--correct-color)'>ممتاز! مستوى احترافي.</span>";
+            } else if (percent >= 70) {
+                msgEl.innerHTML = "<span style='color:var(--gold)'>جيد جداً، لديك إلمام قوي بالمادة.</span>";
+            } else if (percent >= 50) {
+                msgEl.innerHTML = "<span style='color:#f39c12'>مقبول، تحتاج إلى بعض المراجعة.</span>";
+            } else {
+                msgEl.innerHTML = "<span style='color:var(--wrong-color)'>ضعيف، ننصح بمراجعة الملف المرفق مرة أخرى.</span>";
+            }
+
+            // تحديث شريط التقدم للـ 100%
+            document.getElementById('progress-bar').style.width = '100%';
+        }
+
+        // عرض المراجعة التفصيلية
+        function showReview() {
+            const reviewList = document.getElementById('review-list');
+            reviewList.style.display = 'block';
+            reviewList.innerHTML = '<h3>مراجعة الإجابات:</h3><br>';
+
+            questionsDB.forEach((q, index) => {
+                const uAnsIdx = userAnswers[index];
+                const isCorrect = uAnsIdx === q.correctIndex;
+                const statusClass = isCorrect ? 'correct-ans' : 'wrong-ans';
+                
+                const uAnsText = uAnsIdx !== undefined ? q.options[uAnsIdx] : "لم يتم الإجابة";
+                const cAnsText = q.options[q.correctIndex];
+
+                const html = `
+                    <div class="review-item ${statusClass}">
+                        <div class="review-question">س ${index + 1}: ${q.question}</div>
+                        <div class="review-details">
+                            <p><strong>إجابتك:</strong> <span style="color:${isCorrect ? 'var(--correct-color)' : 'var(--wrong-color)'}">${uAnsText}</span></p>
+                            ${!isCorrect ? `<p><strong>الإجابة الصحيحة:</strong> <span style="color:var(--correct-color)">${cAnsText}</span></p>` : ''}
+                            <p style="margin-top:10px; color:#aaa; font-size:0.9rem;"><strong>الشرح:</strong> ${q.explanation}</p>
+                        </div>
+                    </div>
+                `;
+                reviewList.innerHTML += html;
+            });
+            
+            // التمرير السلس لقسم المراجعة
+            reviewList.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
